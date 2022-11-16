@@ -23,7 +23,7 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string|max:255',
             'files' => 'required|array',
-            'files.*' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,rar|max:2048',
+            'files.*' => 'required|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,rar,jpeg,jpg,png,gif,svg |max:6000',
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors()->toJson(), 400);
@@ -58,12 +58,12 @@ class TaskController extends Controller
     {
         $task = Task::with('files')
             ->find($id);
-        
-            if (!$task) {
-                return response()->json([
-                    'message' => 'Task not found'
-                ], 404);
-            }
+
+        if (!$task) {
+            return response()->json([
+                'message' => 'Task not found'
+            ], 404);
+        }
 
         return response()->json($task);
     }
@@ -79,7 +79,7 @@ class TaskController extends Controller
         $task = Task::find($id);
         // $file = File::where('task_id', $task->id);
         // $file->delete();
-        if(!$task){
+        if (!$task) {
             return response()->json([
                 'message' => 'Task not found'
             ], 404);
