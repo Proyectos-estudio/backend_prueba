@@ -69,16 +69,31 @@ class TaskController extends Controller
     }
     public function update(Request $request, $id)
     {
-        $task = Task::find($id);
-        $task->update($request->all());
-        return response()->json($task);
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+            'status' => 'required|boolean',
+        ]);
+        if ($validator->fails()) {
+            return response()->json($validator->errors()->toJson(), 400);
+        }
+
+        return DB::transaction(function () use ($request, $id) {
+            $userLog = auth()->user()->id;
+            $task = Task::find($id);
+            $task->update([
+                'title' => $request->title,
+                'description' => $request->description,
+                'completed' => $request->status,
+                'updated_by' => $userLog,
+            ]);
+            return response()->json($task);
+        }, 5);
     }
 
     public function destroy($id)
     {
         $task = Task::find($id);
-        // $file = File::where('task_id', $task->id);
-        // $file->delete();
         if (!$task) {
             return response()->json([
                 'message' => 'Task not found'
